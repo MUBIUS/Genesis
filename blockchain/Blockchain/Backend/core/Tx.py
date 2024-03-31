@@ -13,6 +13,7 @@ PRIVATE_KEY = (
     "59024195091230105596801455306913435815673319996141880726735464739248197324364"
 )
 MINER_KEY = "1LYgXwYXw16GJXgDwHV7aCNijnQWYEdc1C"
+SIGHASH_ALL = 1
 
 class CoinbaseTx:
     def __init__(self, BlockHeight):
@@ -23,14 +24,14 @@ class CoinbaseTx:
         prev_index = 0xffffffff
 
         tx_ins = []
-        tx_ins.append(Tx_In(prev_tx, prev_index))
+        tx_ins.append(TxIn(prev_tx, prev_index))
         tx_ins[0].script_sig.cmds.append(self.BlockHeightInLittleEndian)
 
         tx_outs = []
         target_amount = REWARD * 100000000
         target_h160 = decode_base58(MINER_KEY)
         target_script = Script.p2pkh_script(target_h160)
-        tx_outs.append(Tx_Out(amount= target_amount, script_pubkey= target_script))
+        tx_outs.append(TxOut(amount= target_amount, script_pubkey= target_script))
         coinbaseTx = Tx(1, tx_ins, tx_outs, 0)
         coinbaseTx.TxId = coinbaseTx.id()
 
@@ -68,6 +69,36 @@ class Tx:
         result += int_to_little_endian(self.locktime, 4)
         
         return result
+    
+    def sigh_hash(self, input_index, script_pubkey):
+        s = int_to_little_endian(self.version)
+        s += encode_varint(len(self.tx_ins))
+
+        for i, tx_in in enumerate(self.tx_ins):
+            if i == input_index:
+                s += TxIn(tx_in.prev_tx, tx_in.prev_index, script_pubkey).serialize()
+            else:
+                s += TxIn(tx_in.prev_tx, tx_in.prev_index).serialize()
+
+        s += encode_varint(len(self.tx_outs))
+
+        for tx_out in self.tx_outs:
+            s += tx_out.serialize()
+        
+        s += int_to_little_endian(self.locktime, 4)
+        s += int_to_little_endian(SIGHASH_ALL, 4)
+        
+        h256 = hash256(s)
+        return int.from_bytes(h256, 'big')
+
+
+    
+    def sign_input(self, input_index, private_key, script_pubkey):
+        z = self.sigh_hash(input_index, script_pubkey)
+        der = private_key.sign(z).der()
+        sig = der + SIGHASH_ALL.to_bytes(1, 'big')
+        sec = private_key.point.sec()
+        self.tx_ins[input_index].script_sig = Script([sig, sec])
 
     def is_coinbase(self):
         """
@@ -113,7 +144,7 @@ class Tx:
 
         return self.__dict__
 
-class Tx_In:
+class TxIn:
     def __init__(self, prev_tx, prev_index, script_sig = None, sequence = 0xffffffff):
         self.prev_tx = prev_tx
         self.prev_index = prev_index
@@ -133,7 +164,7 @@ class Tx_In:
         return result
 
 
-class Tx_Out:
+class TxOut:
     def __init__(self, amount, script_pubkey):
         self.amount = amount
         self.script_pubkey = script_pubkey
