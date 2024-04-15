@@ -2,6 +2,7 @@ import sys
 sys.path.append('/Users/my/Desktop/blockchain')
 
 from Blockchain.Backend.util.util import int_to_little_endian, encode_varint
+from Blockchain.Backend.core.EllepticCurve.op import OP_CODE_FUNCTION
 
 class Script:
     def __init__(self, cmds = None):
@@ -9,6 +10,9 @@ class Script:
             self.cmds = []
         else:
             self.cmds = cmds
+
+    def __add__(self, other):
+        return Script(self.cmds + other.cmds)
 
     def serialize(self):
          # initialize what we'll send back
@@ -45,6 +49,30 @@ class Script:
         total = len(result)
          # opcode varint the total length of the result and prepend 
         return encode_varint(total) + result
+    
+    def evaluate(self, z):
+        cmds = self.cmds[:]
+        stack = []
+
+        while len(cmds) > 0:
+            cmd = cmds.pop(0)
+
+            if type(cmd) == int:
+                operations = OP_CODE_FUNCTION[cmd]
+
+                if cmd == 172:
+                    if not operations(stack, z):
+                        print(f"Error in Signature Verification")
+                        return False
+                    
+                elif not operations(stack):
+                    print(f"Error in Signature Verification")
+                    return False
+
+            else:
+                stack.append(cmd)
+        return True
+
                     
 
     @classmethod

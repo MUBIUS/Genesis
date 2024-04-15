@@ -71,7 +71,7 @@ class Tx:
         return result
     
     def sigh_hash(self, input_index, script_pubkey):
-        s = int_to_little_endian(self.version)
+        s = int_to_little_endian(self.version, 4)
         s += encode_varint(len(self.tx_ins))
 
         for i, tx_in in enumerate(self.tx_ins):
@@ -100,6 +100,12 @@ class Tx:
         sec = private_key.point.sec()
         self.tx_ins[input_index].script_sig = Script([sig, sec])
 
+    def verify_input(self, input_index, script_pubkey):
+        tx_in = self.tx_ins[input_index]
+        z = self.sigh_hash(input_index, script_pubkey) 
+        combined = tx_in.script_sig + script_pubkey
+        return combined.evaluate(z)
+
     def is_coinbase(self):
         """
          # Check that there us exactly 1 input
@@ -125,12 +131,21 @@ class Tx:
          # Convert prev_tx Hash in hex from bytes
          # Convert Blockheight in hex which is stored in Script signature
         """
-        if self.is_coinbase():
-            self.tx_ins[0].prev_tx = self.tx_ins[0].prev_tx.hex()
-            self.tx_ins[0].script_sig.cmds[0] = little_endian_to_int(self.tx_ins[0].script_sig.cmds[0])
-            self.tx_ins[0].script_sig = self.tx_ins[0].script_sig.__dict__
 
-        self.tx_ins[0] = self.tx_ins[0].__dict__
+        for tx_index, tx_in in enumerate(self.tx_ins):
+            if self.is_coinbase():
+                tx_in.script_sig.cmds[0] = little_endian_to_int(
+                    tx_in.script_sig.cmds[0]
+                )
+
+            tx_in.prev_tx = tx_in.prev_tx.hex()
+
+            for index, cmd in enumerate(tx_in.script_sig.cmds):
+                if isinstance(cmd, bytes):
+                    tx_in.script_sig.cmds[index] = cmd.hex()
+
+            tx_in.script_sig = tx_in.script_sig.__dict__
+            self.tx_ins[tx_index] = tx_in.__dict__
 
         """
          Convert Transaction Output to dict
@@ -138,9 +153,10 @@ class Tx:
           # If values is in bytes, convert it to hex
           # Loop Through all the TxOut Objects and convert them into dict 
         """
-        self.tx_outs[0].script_pubkey.cmds[2] = self.tx_outs[0].script_pubkey.cmds[2].hex()
-        self.tx_outs[0].script_pubkey = self.tx_outs[0].script_pubkey.__dict__
-        self.tx_outs[0] = self.tx_outs[0].__dict__
+        for index, tx_out in enumerate(self.tx_outs):
+            tx_out.script_pubkey.cmds[2] = tx_out.script_pubkey.cmds[2].hex()
+            tx_out.script_pubkey = tx_out.script_pubkey.__dict__
+            self.tx_outs[index] = tx_out.__dict__
 
         return self.__dict__
 

@@ -57,5 +57,39 @@ def encode_varint(i):
         return b'\xfd' + int_to_little_endian(i, 8)
     else:
         raise ValueError('integer too large: {}'.format(i))
-
     
+def merkle_parent_level(hashes):
+    """takes a list of binary hashes and returns a list that's half of the length"""
+
+    if len(hashes) % 2 == 1:
+        hashes.append(hashes[-1])
+
+    parent_level = []
+
+    for i in range(0, len(hashes), 2):
+        parent = hash256(hashes[i] + hashes[i + 1])
+        parent_level.append(parent)
+    return parent_level
+
+
+def merkle_root(hashes):
+    """Takes a list of binary hashes and return the merkle root"""
+    current_level = hashes
+
+    while len(current_level) > 1:
+        current_level = merkle_parent_level(current_level)
+
+    return current_level[0]
+
+def target_to_bits(target):
+    """Turns a target integer back into bits"""
+    raw_bytes = target.to_bytes(32, "big")
+    raw_bytes = raw_bytes.lstrip(b"\x00")  # <1>
+    if raw_bytes[0] > 0x7F:  # <2>
+        exponent = len(raw_bytes) + 1
+        coefficient = b"\x00" + raw_bytes[:2]
+    else:
+        exponent = len(raw_bytes)  # <3>
+        coefficient = raw_bytes[:3]  # <4>
+    new_bits = coefficient[::-1] + bytes([exponent])  # <5>
+    return new_bits

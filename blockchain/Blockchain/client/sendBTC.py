@@ -1,3 +1,6 @@
+import sys
+sys.path.append('/Users/my/Desktop/blockchain')
+
 from Blockchain.Backend.util.util import decode_base58
 from Blockchain.Backend.core.Script import Script
 from Blockchain.Backend.core.Tx import TxIn, TxOut, Tx
@@ -85,6 +88,8 @@ class SendBTC:
         if self.isBalanceEnough:
             self.TxOuts = self.prepareTxOut()
             self.TxObj = Tx(1, self.TxIns, self.TxOuts, 0)
+            self.TxObj.TxId = self.TxObj.id()
             self.signTx()
-            return True
+            return self.TxObj
+        
         return False
