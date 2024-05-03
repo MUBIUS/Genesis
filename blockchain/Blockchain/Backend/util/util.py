@@ -5,30 +5,51 @@ import hashlib
 from Crypto.Hash import RIPEMD160
 from hashlib import sha256
 from math import log
+
 from Blockchain.Backend.core.EllepticCurve.EllepticCurve import BASE58_ALPHABET
 
-def hash256(s):
 
-    """TWO ROUNDS OF SHA256"""
-    
+def hash256(s):
+    """Two rounds of SHA256"""
     return hashlib.sha256(hashlib.sha256(s).digest()).digest()
 
+
 def hash160(s):
-    
     return RIPEMD160.new(sha256(s).digest()).digest()
+
 
 def bytes_needed(n):
     if n == 0:
         return 1
     return int(log(n, 256)) + 1
 
+
 def int_to_little_endian(n, length):
-    """Int_to_LITTLE_ENDIAN TAKES INTEGER AND RETURNS THE LITTLE_ENDIAN BYTE SEQUENCE OF LENGTH"""
-    return n.to_bytes(length, 'little')
+    """Int_to_little_endian takes an interger and return the little-endian byte sequence of length"""
+    return n.to_bytes(length, "little")
+
 
 def little_endian_to_int(b):
-    """Takes a bytes sequence and returns an integer"""
-    return int.from_bytes(b, 'little')
+    """takes a byte sequence and returns an integer"""
+    return int.from_bytes(b, "little")
+
+def encode_base58(s):
+    # determine how many 0 bytes (b'\x00') s starts with
+    count = 0
+    for c in s:
+        if c == 0:
+            count += 1
+        else:
+            break
+    # convert to big endian integer
+    num = int.from_bytes(s, 'big')
+    prefix = '1' * count
+    result = ''
+    while num > 0:
+        num, mod = divmod(num, 58)
+        result = BASE58_ALPHABET[mod] + result
+    return prefix + result
+
 
 def decode_base58(s):
     num = 0
@@ -45,19 +66,36 @@ def decode_base58(s):
 
     return combined[1:-4]
 
+def read_varint(s):
+    '''read_varint reads a variable integer from a stream'''
+    i = s.read(1)[0]
+    if i == 0xfd:
+        # 0xfd means the next two bytes are the number
+        return little_endian_to_int(s.read(2))
+    elif i == 0xfe:
+        # 0xfe means the next four bytes are the number
+        return little_endian_to_int(s.read(4))
+    elif i == 0xff:
+        # 0xff means the next eight bytes are the number
+        return little_endian_to_int(s.read(8))
+    else:
+        # anything else is just the integer
+        return i
+
 def encode_varint(i):
-    """encodes an integer as a variant"""
-    if i < 0xfd:
+    """encodes an integer as a varint"""
+    if i < 0xFD:
         return bytes([i])
     elif i < 0x10000:
-        return b'\xfd' + int_to_little_endian(i, 2)
+        return b"\xfd" + int_to_little_endian(i, 2)
     elif i < 0x100000000:
-        return b'\xfd' + int_to_little_endian(i, 4)
+        return b"\xfe" + int_to_little_endian(i, 4)
     elif i < 0x10000000000000000:
-        return b'\xfd' + int_to_little_endian(i, 8)
+        return b"\xff" + int_to_little_endian(i, 8)
     else:
-        raise ValueError('integer too large: {}'.format(i))
-    
+        raise ValueError("integer too large: {}".format(i))
+
+
 def merkle_parent_level(hashes):
     """takes a list of binary hashes and returns a list that's half of the length"""
 
@@ -81,6 +119,7 @@ def merkle_root(hashes):
 
     return current_level[0]
 
+
 def target_to_bits(target):
     """Turns a target integer back into bits"""
     raw_bytes = target.to_bytes(32, "big")
@@ -93,3 +132,8 @@ def target_to_bits(target):
         coefficient = raw_bytes[:3]  # <4>
     new_bits = coefficient[::-1] + bytes([exponent])  # <5>
     return new_bits
+
+def bits_to_target(bits):
+    exponent = bits[-1]
+    coefficient = little_endian_to_int(bits[:-1])
+    return coefficient * 256**(exponent - 3)

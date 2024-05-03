@@ -6,6 +6,7 @@ from Blockchain.Backend.util.util import hash160, hash256
 from Blockchain.Backend.core.database.database import AccountDB
 import secrets
 
+
 class account:
     def createKeys(self):
         """Secp256k1 Curve Generator Points"""
