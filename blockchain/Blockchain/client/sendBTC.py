@@ -1,5 +1,6 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from Blockchain.Backend.util.util import decode_base58
 from Blockchain.Backend.core.Script import Script

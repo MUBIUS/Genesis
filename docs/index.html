@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Genesis — Bitcoin Blockchain Built From Scratch in Python</title>
+  <meta name="description" content="A complete Bitcoin blockchain implementation built from scratch in Python: secp256k1 ECDSA, SHA-256 proof-of-work mining, P2PKH transactions, UTXO set management, peer-to-peer sync, and real-time block explorer." />
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Genesis — Bitcoin Blockchain in Python" />
+  <meta property="og:description" content="Complete Bitcoin protocol implementation built from scratch in Python: secp256k1, PoW mining, P2PKH, UTXO, P2P networking." />
+  <meta property="og:type" content="website" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="navbar" id="top-navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <a href="#explorer" class="brand-link" id="brand-link">
+          <span class="brand-logo" aria-hidden="true">⬡</span>
+          <span class="brand-name">Genesis</span>
+        </a>
+        <span class="brand-badge"><span class="status-dot"></span> PoW Active</span>
+      </div>
+
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button class="nav-tab active" data-tab="explorer" id="tab-btn-explorer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Explorer
+        </button>
+        <button class="nav-tab" data-tab="miner" id="tab-btn-miner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          PoW Miner
+        </button>
+        <button class="nav-tab" data-tab="keygen" id="tab-btn-keygen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Keys & Addresses
+        </button>
+        <button class="nav-tab" data-tab="scriptvm" id="tab-btn-scriptvm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Script VM
+        </button>
+        <button class="nav-tab" data-tab="architecture" id="tab-btn-architecture">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          Architecture
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/MUBIUS/Genesis" target="_blank" rel="noopener noreferrer" class="btn btn-github" id="github-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main class="main-wrapper" id="main-content">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: BLOCK EXPLORER -->
+    <!-- ============================================================== -->
+    <section class="tab-pane active" id="pane-explorer">
+      
+      <!-- Hero Banner -->
+      <div class="hero-section">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+          <div class="hero-tag">Portfolio Showcase • Bitcoin Core Compatible</div>
+          <h1 class="hero-title">Genesis Block Explorer</h1>
+          <p class="hero-subtitle">
+            A production-grade Bitcoin blockchain built entirely from first principles in Python. Inspect blocks, verify cryptographic Merkle trees, and explore P2PKH transactions on the Genesis chain.
+          </p>
+
+          <!-- Search Bar -->
+          <div class="search-box">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="chain-search-input" placeholder="Search by Block Height (#0-#16), Block Hash, TxID, or Bitcoin Address…" aria-label="Search blockchain" />
+            <button class="btn btn-primary" id="chain-search-btn">Search</button>
+          </div>
+          <div id="search-feedback" class="search-feedback hidden"></div>
+        </div>
+      </div>
+
+      <!-- Chain Stats Row -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-meta">CHAIN HEIGHT</div>
+          <div class="stat-value text-accent" id="stat-height">#16</div>
+          <div class="stat-sub">17 Blocks Mined</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">TOTAL TRANSACTIONS</div>
+          <div class="stat-value" id="stat-txs">18</div>
+          <div class="stat-sub">Coinbase & P2PKH</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">CONSENSUS ALGORITHM</div>
+          <div class="stat-value text-glow">SHA-256d PoW</div>
+          <div class="stat-sub">Target 20s Block Time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-meta">CURRENT REWARD</div>
+          <div class="stat-value text-success">50 BTC</div>
+          <div class="stat-sub">850 BTC Total Supply</div>
+        </div>
+      </div>
+
+      <!-- Latest Blocks Table -->
+      <div class="card explorer-card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Mined Blocks</h2>
+            <p class="card-subtitle">Complete ledger history synchronized from Genesis Block #0</p>
+          </div>
+          <div class="card-header-badge">
+            <span id="block-count-badge">17 Blocks</span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="blocks-table">
+            <thead>
+              <tr>
+                <th scope="col">Height</th>
+                <th scope="col">Block Hash</th>
+                <th scope="col">Timestamp</th>
+                <th scope="col">Transactions</th>
+                <th scope="col">Size</th>
+                <th scope="col">Nonce</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody id="blocks-table-body">
+              <!-- Populated via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Feature Highlight Cards -->
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔐</div>
+          <h3>secp256k1 Elliptic Curve</h3>
+          <p>Full implementation of point addition, point doubling, scalar multiplication, and ECDSA signature creation and verification on the secp256k1 curve.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⛏️</div>
+          <h3>Proof-of-Work Mining</h3>
+          <p>Double-SHA256 hash algorithm with dynamic difficulty target retargeting every 10 blocks, matching Bitcoin’s difficulty adjustment logic.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📜</div>
+          <h3>P2PKH & Script Engine</h3>
+          <p>Pay-To-Public-Key-Hash scripts executed via a Forth-like stack machine with standard Bitcoin opcodes: OP_DUP, OP_HASH160, OP_EQUALVERIFY, and OP_CHECKSIG.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>P2P Gossip Network</h3>
+          <p>Multi-threaded TCP node server and client for peer handshake, version exchange, transaction relay, and block inventory propagation.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: PROOF-OF-WORK MINING SIMULATOR -->
+    <!-- ============================================================== -->
+    <section class="tab-pane hidden" id="pane-miner">
+      <div class="section-header">
+        <div class="hero-tag">Interactive Consensus Engine</div>
+        <h2>Proof-of-Work Mining Simulator</h2>
+        <p class="section-desc">Experience how Bitcoin miners find valid proof-of-work nonces. The simulator computes double SHA-256 hashes (`SHA256(SHA256(BlockHeader))`) using the browser's hardware-accelerated Web Crypto API.</p>
+      </div>
+
+      <div class="miner-layout">
+        <div class="card miner-controls-card">
+          <h3 class="card-title">Block Configuration</h3>
+
+          <div class="form-group">
+            <label for="mine-prev-hash">Previous Block Hash</label>
+            <input type="text" id="mine-prev-hash" class="code-input" value="0000ee3f815ecb73154328f91b8dd34be0e602300448333160de2d02dd7df8d3" />
+          </div>
+
+          <div class="form-group">
+            <label for="mine-payload">Block Transactions / Payload</label>
+            <input type="text" id="mine-payload" class="code-input" value="Coinbase: 50 BTC -> 1GenesisMinerRewardAddress" />
+          </div>
+
+          <div class="form-group">
+            <label for="mine-difficulty">Target Difficulty (Leading Zeros)</label>
+            <select id="mine-difficulty" class="select-input">
+              <option value="1">1 Zero (0...) — Instant (~16 hashes)</option>
+              <option value="2">2 Zeros (00...) — Fast (~256 hashes)</option>
+              <option value="3" selected>3 Zeros (000...) — Moderate (~4,096 hashes)</option>
+              <option value="4">4 Zeros (0000...) — Hard (~65,536 hashes, Genesis level)</option>
+            </select>
+          </div>
+
+          <div class="miner-actions">
+            <button class="btn btn-primary" id="btn-start-mining">
+              <span id="mining-btn-icon">⚡</span> <span id="mining-btn-text">Start Mining</span>
+            </button>
+            <button class="btn btn-outline" id="btn-reset-mining">Reset Nonce</button>
+          </div>
+        </div>
+
+        <div class="card miner-status-card">
+          <h3 class="card-title">Live Mining Telemetry</h3>
+          
+          <div class="telemetry-grid">
+            <div class="telemetry-item">
+              <span class="telemetry-label">CURRENT NONCE</span>
+              <span class="telemetry-val text-accent" id="live-nonce">0</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">HASH RATE</span>
+              <span class="telemetry-val" id="live-hashrate">0 H/s</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">ELAPSED TIME</span>
+              <span class="telemetry-val" id="live-elapsed">0.0s</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">STATUS</span>
+              <span class="telemetry-val text-glow" id="live-status">Idle</span>
+            </div>
+          </div>
+
+          <div class="hash-display">
+            <div class="hash-label">LATEST COMPUTED HASH</div>
+            <div class="hash-value" id="live-hash">Click 'Start Mining' to begin hashing...</div>
+          </div>
+
+          <div class="target-display">
+            <div class="hash-label">REQUIRED TARGET PREFIX</div>
+            <div class="hash-target text-accent" id="live-target">000...</div>
+          </div>
+
+          <div id="mining-success-alert" class="alert alert-success hidden">
+            <h4>🎉 Block Mined Successfully!</h4>
+            <p id="mining-success-details"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: KEYS & ADDRESS GENERATOR -->
+    <!-- ============================================================== -->
+    <section class="tab-pane hidden" id="pane-keygen">
+      <div class="section-header">
+        <div class="hero-tag">Cryptographic Foundation</div>
+        <h2>Bitcoin Address & Key Generator</h2>
+        <p class="section-desc">Generate standard Bitcoin keypairs using secp256k1 elliptic curve multiplication and Base58Check encoding. Observe every cryptographic derivation step from private entropy to public address.</p>
+      </div>
+
+      <div class="keygen-layout">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Keypair Derivation Pipeline</h3>
+            <button class="btn btn-primary" id="btn-generate-keys">Generate New Keypair</button>
+          </div>
+
+          <div class="pipeline-steps">
+            <div class="pipeline-step">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <div class="step-title">256-bit Private Key (Secret Exponent \(k\))</div>
+                <div class="step-desc">A securely chosen 256-bit scalar within the field range \([1, n-1]\).</div>
+                <div class="code-box" id="keygen-privkey">0xeaa5fd408bc3a0b49efdafff43b53eb99f137c4c9b89014643403857ca056183</div>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <div class="step-title">secp256k1 Public Key (\(P = k \times G\))</div>
+                <div class="step-desc">Elliptic curve point multiplication using generator point \(G = (G_x, G_y)\).</div>
+                <div class="code-box break-all" id="keygen-pubkey">0289ecdc1efcecdea09a9bd7eb8aa7dd5d1a4e7ca337bc07c75e42fcfb7acd3ee2</div>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <div class="step-title">HASH160 (RIPEMD160 ∘ SHA256)</div>
+                <div class="step-desc">20-byte cryptographic fingerprint of the public key.</div>
+                <div class="code-box" id="keygen-hash160">c88a87311746f34ee64fa13210344b58e2397ddc</div>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">4</div>
+              <div class="step-content">
+                <div class="step-title">Base58Check Bitcoin Address</div>
+                <div class="step-desc">Mainnet prefix (0x00) + HASH160 + 4-byte checksum, Base58 encoded.</div>
+                <div class="code-box text-accent text-lg" id="keygen-address">1LqvrcJzzZgBLFr1vTJX8op9pyJgDLZudF</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card address-card">
+          <h3 class="card-title">Generated Address Card</h3>
+          <div class="qr-container" id="qr-container">
+            <!-- SVG QR code rendered here -->
+          </div>
+          <div class="address-display">
+            <span class="badge badge-accent">Mainnet P2PKH</span>
+            <div class="address-string" id="qr-address-label">1LqvrcJzzZgBLFr1vTJX8op9pyJgDLZudF</div>
+            <button class="btn btn-outline btn-sm" id="btn-copy-address">Copy Address</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: SCRIPT VM VISUALIZER -->
+    <!-- ============================================================== -->
+    <section class="tab-pane hidden" id="pane-scriptvm">
+      <div class="section-header">
+        <div class="hero-tag">Transaction Execution Virtual Machine</div>
+        <h2>P2PKH Script Execution Visualizer</h2>
+        <p class="section-desc">Bitcoin verifies transactions using a stack-based script language. Walk through the standard Pay-to-Public-Key-Hash validation process step-by-step.</p>
+      </div>
+
+      <div class="scriptvm-layout">
+        <div class="card vm-code-card">
+          <h3 class="card-title">Script Instructions</h3>
+          <div class="script-instruction-list" id="script-instruction-list">
+            <div class="script-op-item" data-step="0"><code>&lt;sig&gt;</code> <span class="op-desc">Push ECDSA signature to stack</span></div>
+            <div class="script-op-item" data-step="1"><code>&lt;pubKey&gt;</code> <span class="op-desc">Push public key to stack</span></div>
+            <div class="script-op-item" data-step="2"><code>OP_DUP</code> <span class="op-desc">Duplicate top stack item</span></div>
+            <div class="script-op-item" data-step="3"><code>OP_HASH160</code> <span class="op-desc">Hash top stack item (SHA256 + RIPEMD160)</span></div>
+            <div class="script-op-item" data-step="4"><code>&lt;pubKeyHash&gt;</code> <span class="op-desc">Push recipient address hash</span></div>
+            <div class="script-op-item" data-step="5"><code>OP_EQUALVERIFY</code> <span class="op-desc">Check hashes match and discard</span></div>
+            <div class="script-op-item" data-step="6"><code>OP_CHECKSIG</code> <span class="op-desc">Verify ECDSA signature with public key</span></div>
+          </div>
+
+          <div class="vm-controls">
+            <button class="btn btn-outline" id="btn-vm-prev" disabled>← Previous Step</button>
+            <button class="btn btn-primary" id="btn-vm-next">Next Step →</button>
+            <button class="btn btn-outline" id="btn-vm-reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="card vm-stack-card">
+          <h3 class="card-title">Execution Stack</h3>
+          <div class="stack-meta">Top of stack is at the top. Condition evaluates to TRUE if stack top is non-zero upon termination.</div>
+          
+          <div class="stack-container" id="vm-stack-container">
+            <div class="stack-item stack-empty">Stack is empty. Click "Next Step" to begin.</div>
+          </div>
+
+          <div class="vm-status-box" id="vm-status-box">
+            <div class="status-title">Current State: Ready</div>
+            <div class="status-msg">Click "Next Step" to push the unlocking script onto the execution stack.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: ARCHITECTURE & SYSTEM DESIGN -->
+    <!-- ============================================================== -->
+    <section class="tab-pane hidden" id="pane-architecture">
+      <div class="section-header">
+        <div class="hero-tag">System Design & Specifications</div>
+        <h2>Genesis Architecture & Implementation Details</h2>
+        <p class="section-desc">Comprehensive breakdown of how Genesis implements Bitcoin Core specifications in pure Python.</p>
+      </div>
+
+      <div class="arch-grid">
+        <div class="card arch-card">
+          <h3>1. Cryptographic Primitive Layer</h3>
+          <p>Implements finite field arithmetic modulo the secp256k1 prime \(p = 2^{256} - 2^{32} - 977\). Points on the curve satisfy \(y^2 = x^3 + 7 \pmod p\).</p>
+          <ul class="arch-list">
+            <li><strong>FieldElement:</strong> Modular addition, subtraction, multiplication, and inverse using Fermat's Little Theorem.</li>
+            <li><strong>Point:</strong> Group law operations (point doubling, distinct point addition, point at infinity).</li>
+            <li><strong>ECDSA Signatures:</strong> Deterministic nonce generation (RFC 6979) and DER encoding.</li>
+            <li><strong>Base58Check:</strong> Checksummed encoding preventing transcription typos in Bitcoin addresses.</li>
+          </ul>
+        </div>
+
+        <div class="card arch-card">
+          <h3>2. Block Header & Consensus</h3>
+          <p>Every block header is strictly 80 bytes, matching Bitcoin’s canonical binary wire format.</p>
+          <ul class="arch-list">
+            <li><strong>Version (4 bytes):</strong> Block version integer.</li>
+            <li><strong>Previous Block Hash (32 bytes):</strong> Little-endian double-SHA256 pointer.</li>
+            <li><strong>Merkle Root (32 bytes):</strong> Cryptographic root of all included transactions.</li>
+            <li><strong>Timestamp (4 bytes):</strong> Unix epoch time.</li>
+            <li><strong>Bits / Target (4 bytes):</strong> Compact exponent-mantissa difficulty representation.</li>
+            <li><strong>Nonce (4 bytes):</strong> Mining counter incremented during proof of work.</li>
+          </ul>
+        </div>
+
+        <div class="card arch-card">
+          <h3>3. UTXO Model & Transactions</h3>
+          <p>Unlike account-based ledgers (e.g. Ethereum), Genesis tracks ownership via an unspent transaction output (UTXO) pool.</p>
+          <ul class="arch-list">
+            <li><strong>Coinbase Transactions:</strong> Special first transaction per block creating 50 new BTC + transaction fees with no prior inputs.</li>
+            <li><strong>TxIn & TxOut:</strong> Inputs reference previous output hashes and output indices; outputs specify satoshis and locking scripts.</li>
+            <li><strong>Double-Spend Prevention:</strong> Strict UTXO lookup prevents reusing consumed outputs.</li>
+          </ul>
+        </div>
+
+        <div class="card arch-card">
+          <h3>4. Peer-to-Peer Networking</h3>
+          <p>A multi-node TCP gossip layer enables decentralized synchronization.</p>
+          <ul class="arch-list">
+            <li><strong>NetworkEnvelope:</strong> Binary packet wrapper containing magic bytes, command name, payload length, and checksum.</li>
+            <li><strong>SyncManager:</strong> Handles block downloads, chain reorganization (longest valid chain rule), and mempool propagation.</li>
+            <li><strong>Port Binding:</strong> Multi-process architecture running mining, networking, and the web UI concurrently.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal for Block Details -->
+  <div class="modal hidden" id="block-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Block Details</h3>
+        <button class="modal-close" id="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Content injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="brand-logo" aria-hidden="true">⬡</span>
+        <strong>Genesis</strong> — Bitcoin Blockchain Built From Scratch in Python
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/MUBIUS/Genesis" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        <a href="#explorer" onclick="document.getElementById('tab-btn-explorer').click()">Block Explorer</a>
+        <a href="#miner" onclick="document.getElementById('tab-btn-miner').click()">PoW Miner</a>
+        <a href="#architecture" onclick="document.getElementById('tab-btn-architecture').click()">System Design</a>
+      </div>
+      <div class="footer-tech">
+        Python 3.10+ • Flask • secp256k1 • SHA-256d • P2PKH • WebCrypto API
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

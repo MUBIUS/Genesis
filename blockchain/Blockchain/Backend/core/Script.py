@@ -1,5 +1,6 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 from Blockchain.Backend.util.util import int_to_little_endian, encode_varint, little_endian_to_int, read_varint
 from Blockchain.Backend.core.EllepticCurve.op import OP_CODE_FUNCTION

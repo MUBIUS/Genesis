@@ -1,94 +1,144 @@
-{% extends 'base.html' %} {% block title %} Codies Alert {% endblock %} {% block
-content%}
+{% extends 'base.html' %}
+{% block title %}Block #{{ block['Height'] }}{% endblock %}
+{% block content %}
 
-<h1 class="BlockNumber">BLOCK #{{ block['Height']}}</h1>
-
-<div class="grid-container3">
-  <div class="TxHeader">
-    <h1>{{block['BlockHeader']['blockHash']}}</h1>
-
-    <div class="TxItem PrevBlockHash">Previous Block Hash</div>
-    <div class="TxItem TotalTxs">Total Transactions</div>
-    <div class="TxItem BlockSize">Block Size</div>
-    <div class="TxItem MerkleRoot">Merkle Root</div>
-    <div class="TxItem Target">Target (Bits)</div>
-    <div class="TxItem Nonce">Nonce</div>
-    <div class="TxItem Timestamp">Timestamp</div>
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="{{ url_for('block') }}">Blocks</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Block #{{ block['Height'] }}</span>
   </div>
+  <h1>Block <span class="accent">#{{ block['Height'] }}</span></h1>
+  {% if block['Height'] == 0 %}
+  <span class="tag tag-genesis">Genesis Block</span>
+  {% endif %}
+</div>
 
-  <div class="TxDetails">
-    <h1>_</h1>
+<!-- Block Header Details -->
+<div class="detail-card">
+  <h2 class="detail-card-title">Block Header</h2>
+  <div class="detail-grid">
 
-    {% if (block['Height']) == 0 %}
-    <div class="TxItemDetail PrevBlockHash">
-      {{block['BlockHeader']['prevBlockHash']}} (GENESIS BLOCK)
+    <div class="detail-row">
+      <span class="detail-label">Hash</span>
+      <span class="detail-value mono break-all accent-text">{{ block['BlockHeader']['blockHash'] }}</span>
     </div>
-    {% else %}
-    <div class="TxItemDetail PrevBlockHash">
-      <a
-        href="{{ url_for('block', blockHeader=block['BlockHeader']['prevBlockHash']) }}"
-        >{{block['BlockHeader']['prevBlockHash']}}
-      </a>
-    </div>
-    {% endif %}
 
-    <div class="TxItemDetail TotalTxs">{{block['Txcount']}}</div>
-    <div class="TxItemDetail BlockSize">{{ block['Blocksize']}}</div>
-    <div class="TxItemDetail MerkleRoot">
-      {{block['BlockHeader']['merkleRoot']}}
+    <div class="detail-row">
+      <span class="detail-label">Previous Block</span>
+      <span class="detail-value">
+        {% if block['Height'] == 0 %}
+        <span class="mono muted">{{ block['BlockHeader']['prevBlockHash'] }}</span>
+        <span class="tag tag-genesis">Genesis</span>
+        {% else %}
+        <a href="{{ url_for('showBlock', blockHeader=block['BlockHeader']['prevBlockHash']) }}"
+           class="hash-link mono">
+          {{ block['BlockHeader']['prevBlockHash'] }}
+        </a>
+        {% endif %}
+      </span>
     </div>
-    <div class="TxItemDetail Target">{{block['BlockHeader']['bits']}}</div>
-    <div class="TxItemDetail Nonce">{{block['BlockHeader']['nonce']}}</div>
-    <div class="TxItemDetail Timestamp">
-      {{block['BlockHeader']['timestamp']}}
+
+    <div class="detail-row">
+      <span class="detail-label">Merkle Root</span>
+      <span class="detail-value mono break-all">{{ block['BlockHeader']['merkleRoot'] }}</span>
     </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Timestamp</span>
+      <span class="detail-value">
+        {{ format_timestamp(block['BlockHeader']['timestamp']) }}
+        <span class="muted">({{ block['BlockHeader']['timestamp'] }})</span>
+      </span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Bits (Target)</span>
+      <span class="detail-value mono">{{ block['BlockHeader']['bits'] }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Nonce</span>
+      <span class="detail-value mono">{{ block['BlockHeader']['nonce'] }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Transactions</span>
+      <span class="detail-value">{{ block.get('TxCount') or block.get('Txcount') or 0 }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Size</span>
+      <span class="detail-value">{{ block.get('Blocksize', 0) }} bytes</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Version</span>
+      <span class="detail-value mono">{{ block['BlockHeader'].get('version', 1) }}</span>
+    </div>
+
   </div>
 </div>
 
-<h1 class="TransactionsHeader">Transactions</h1>
-{% for blk in block['Txs'] %}
-<div class="TranscationsDiv">
-  <div class="TxStyle">
-    <h4 class="TxStyle TxId">
-      <a href="{{ url_for('transactions', txid=blk['TxId']) }}">
-        {{ blk['TxId'] }}
+<!-- Transactions in Block -->
+<div class="section">
+  <h2>Transactions</h2>
+
+  {% for tx in block['Txs'] %}
+  <div class="tx-card">
+    <div class="tx-card-header">
+      <a href="{{ url_for('transactions', txid=tx['TxId']) }}" class="tx-id mono">
+        {{ tx['TxId'] }}
       </a>
-    </h4>
-    <h3>Inputs</h3>
-    {% for tx_in in blk['tx_ins'] %}
-
-    <!-- if coinbase Transcation  -->
-    {% if
-    tx_in['prev_tx']=='0000000000000000000000000000000000000000000000000000000000000000'
-    %}
-    <div class="TxStyle TxInput">#0 Coinbase</div>
-    {% else %}
-    <div class="TxStyle TxInput">
-      <a href="{{ url_for('transactions', txid=tx_in['prev_tx']) }}"
-        >#{{ loop.index0 }} {{ tx_in['prev_tx'] }}
-      </a>
+      {% if tx['tx_ins'][0]['prev_tx'] == '0000000000000000000000000000000000000000000000000000000000000000' %}
+      <span class="tag tag-coinbase">Coinbase</span>
+      {% endif %}
     </div>
-    {%endif %} {% endfor %}
-  </div>
 
-  <div class="TxStyle output">
-    <h3>Outputs</h3>
-    {% set TotaAmount = 0 %} {% for tx_out in blk['tx_outs'] %}
+    <div class="tx-io-grid">
+      <!-- Inputs -->
+      <div class="tx-io-col">
+        <h4 class="io-label">Inputs</h4>
+        {% for tx_in in tx['tx_ins'] %}
+        <div class="io-item io-input">
+          {% if tx_in['prev_tx'] == '0000000000000000000000000000000000000000000000000000000000000000' %}
+          <span class="coinbase-label">🏆 Coinbase (New Coins)</span>
+          {% else %}
+          <a href="{{ url_for('transactions', txid=tx_in['prev_tx']) }}" class="mono break-all">
+            #{{ loop.index0 }} {{ tx_in['prev_tx'] }}
+          </a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
 
-    <div class="Txoutput">
-      {% set h160hash = bytes.fromhex(tx_out['script_pubkey']['cmds'][2]) %} {%
-      set newAddr = main_prefix + h160hash %} {% set checksum =
-      sha256(sha256(newAddr).digest()).digest()[:4] %} {% set newAddr =newAddr +
-      checksum %} {% set pubAddress = encode_base58(newAddr) %} {% set
-      TotaAmount = TotaAmount + tx_out['amount'] %} {% if
-      (tx_out['amount']%100000000) == 0 %} {% set amount =
-      (tx_out['amount']/100000000)|int %} {% else %} {% set amount =
-      (tx_out['amount']/100000000) %} {% endif %}
-      <a href="{{ url_for('address', publicAddress = pubAddress) }}">
-        #{{ loop.index0 }} {{ pubAddress }} : {{ amount }} BTC</a
-      >
+      <div class="tx-arrow" aria-hidden="true">→</div>
+
+      <!-- Outputs -->
+      <div class="tx-io-col">
+        <h4 class="io-label">Outputs</h4>
+        {% for tx_out in tx['tx_outs'] %}
+        {% set h160hash = bytes.fromhex(tx_out['script_pubkey']['cmds'][2]) %}
+        {% set newAddr = main_prefix + h160hash %}
+        {% set checksum = sha256(sha256(newAddr).digest()).digest()[:4] %}
+        {% set newAddr = newAddr + checksum %}
+        {% set pubAddress = encode_base58(newAddr) %}
+        {% if (tx_out['amount'] % 100000000) == 0 %}
+          {% set amount = (tx_out['amount'] / 100000000)|int %}
+        {% else %}
+          {% set amount = tx_out['amount'] / 100000000 %}
+        {% endif %}
+        <div class="io-item io-output">
+          <a href="{{ url_for('address', publicAddress=pubAddress) }}" class="address-link">
+            {{ pubAddress }}
+          </a>
+          <span class="amount-badge">{{ amount }} BTC</span>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-    {% endfor %}
   </div>
+  {% endfor %}
 </div>
-{% endfor %} {%endblock%}
+
+{% endblock %}

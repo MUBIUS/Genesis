@@ -1,27 +1,46 @@
-{% extends 'base.html' %} {% block title %} Block {% endblock %} {% block
-content %}
-<div class="grid-container">
+{% extends 'base.html' %}
+{% block title %}Blocks{% endblock %}
+{% block content %}
+
+<div class="page-header">
   <h1>Latest Blocks</h1>
-  <div class="blockheader">
-    <div class="bheader">Block Height</div>
-    <div class="bheader">Block Header</div>
-    <div class="Transactions">Transactions</div>
-    <div class="Size">Size (Bytes)</div>
-  </div>
-  {% for block in blocks[::-1] %}
-  <a
-    id="detail"
-    href="{{ url_for('block', blockHeader = block['BlockHeader']['blockHash'])}}"
-  >
-    <div class="block">
-      <div class="block-item Height">{{block["Height"]}}</div>
-      <div class="block-item BlockHeader">
-        {{block["BlockHeader"]['blockHash']}}
-      </div>
-      <div class="block-item TxCount">{{block["Txcount"]}}</div>
-      <div class="block-item BlockSize">{{block["Blocksize"]}}</div>
-    </div>
-  </a>
-  {% endfor %}
+  <p class="page-subtitle">{{ blocks|length }} blocks on chain — newest first</p>
 </div>
+
+<div class="table-container">
+  <table class="data-table" aria-label="Blockchain blocks">
+    <thead>
+      <tr>
+        <th scope="col">Height</th>
+        <th scope="col">Block Hash</th>
+        <th scope="col">Merkle Root</th>
+        <th scope="col">Transactions</th>
+        <th scope="col">Size (bytes)</th>
+        <th scope="col">Nonce</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for blk in blocks[::-1] %}
+      <tr class="table-row-link" onclick="location.href='{{ url_for('showBlock', blockHeader=blk['BlockHeader']['blockHash']) }}'">
+        <td><span class="height-badge">#{{ blk['Height'] }}</span></td>
+        <td class="hash-cell">
+          <a href="{{ url_for('showBlock', blockHeader=blk['BlockHeader']['blockHash']) }}"
+             class="hash-link mono" title="{{ blk['BlockHeader']['blockHash'] }}">
+            {{ blk['BlockHeader']['blockHash'][:20] }}…
+          </a>
+        </td>
+        <td class="hash-cell">
+          <span class="mono muted" title="{{ blk['BlockHeader']['merkleRoot'] }}">
+            {{ blk['BlockHeader']['merkleRoot'][:16] }}…
+          </span>
+        </td>
+        <td class="center">{{ blk.get('TxCount') or blk.get('Txcount') or 0 }}</td>
+        <td class="center">{{ blk.get('Blocksize', 0) }}</td>
+        <td class="mono center">{{ blk['BlockHeader']['nonce'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
 {% endblock %}

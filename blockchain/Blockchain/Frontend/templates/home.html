@@ -1,7 +1,120 @@
-{% extends 'base.html' %} {% block title %} Home {% endblock %} {% block content
-%}
-<div class="mainText">
-  <h1>Genesis</h1>
-  <h2>Bitcoin from Scratch in Python</h2>
-</div>
-{% endblock%}
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg-grid" aria-hidden="true"></div>
+  <div class="hero-content">
+    <div class="hero-badge">⬡ Proof of Work Active</div>
+    <h1 class="hero-title">Genesis</h1>
+    <p class="hero-subtitle">Bitcoin-compatible blockchain, built from scratch in Python</p>
+    <p class="hero-desc">
+      A complete implementation of the Bitcoin protocol — secp256k1 elliptic curve cryptography,
+      SHA-256 proof-of-work mining, P2PKH transactions, UTXO management, a peer-to-peer sync layer,
+      and a real-time block explorer.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('block') }}" class="btn btn-primary">Explore Blocks →</a>
+      <a href="https://github.com/MUBIUS/Genesis" target="_blank" rel="noopener noreferrer" class="btn btn-outline">GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Bar -->
+<section class="stats-bar" aria-label="Chain statistics">
+  <div class="stat-card">
+    <span class="stat-value" id="stat-height">{{ chain_height }}</span>
+    <span class="stat-label">Chain Height</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value" id="stat-txs">{{ total_txs }}</span>
+    <span class="stat-label">Transactions</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">50 BTC</span>
+    <span class="stat-label">Block Reward</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-value">20s</span>
+    <span class="stat-label">Target Block Time</span>
+  </div>
+</section>
+
+<!-- Recent Blocks -->
+{% if recent_blocks %}
+<section class="section">
+  <div class="section-header">
+    <h2>Latest Blocks</h2>
+    <a href="{{ url_for('block') }}" class="see-all-link">View all →</a>
+  </div>
+  <div class="table-container">
+    <table class="data-table" aria-label="Latest mined blocks">
+      <thead>
+        <tr>
+          <th scope="col">Height</th>
+          <th scope="col">Block Hash</th>
+          <th scope="col">Transactions</th>
+          <th scope="col">Size</th>
+          <th scope="col">Nonce</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for blk in recent_blocks %}
+        <tr class="table-row-link" onclick="location.href='{{ url_for('showBlock', blockHeader=blk['BlockHeader']['blockHash']) }}'">
+          <td><span class="height-badge">#{{ blk['Height'] }}</span></td>
+          <td class="hash-cell">
+            <a href="{{ url_for('showBlock', blockHeader=blk['BlockHeader']['blockHash']) }}"
+               class="hash-link" title="{{ blk['BlockHeader']['blockHash'] }}">
+              {{ blk['BlockHeader']['blockHash'][:16] }}…{{ blk['BlockHeader']['blockHash'][-8:] }}
+            </a>
+          </td>
+          <td>{{ blk.get('TxCount') or blk.get('Txcount') or 0 }}</td>
+          <td>{{ blk.get('Blocksize', 0) }} bytes</td>
+          <td class="mono">{{ blk['BlockHeader']['nonce'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<!-- Feature Cards -->
+<section class="section features-section">
+  <h2>What's Implemented</h2>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <h3>secp256k1 ECDSA</h3>
+      <p>Bitcoin's elliptic curve — private keys, public key derivation, DER-encoded signatures, and signature verification built from field arithmetic.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⛏️</div>
+      <h3>SHA-256 Proof of Work</h3>
+      <p>Double-SHA-256 mining loop with difficulty adjustment every 10 blocks, targeting a 20-second average block time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💸</div>
+      <h3>P2PKH Transactions</h3>
+      <p>Pay-to-Public-Key-Hash scripts, coinbase transactions, UTXO set management, fee calculation, and double-spend detection.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>P2P Sync Layer</h3>
+      <p>TCP socket-based peer-to-peer networking with block propagation, chain sync, mempool relay, and orphan chain resolution.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <h3>Merkle Tree</h3>
+      <p>Merkle root computation for all block transactions, identical to Bitcoin's construction.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <h3>Block Explorer</h3>
+      <p>Real-time Flask block explorer — browse blocks, transactions, mempool, and addresses with QR codes.</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

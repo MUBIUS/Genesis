@@ -1,7 +1,8 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))))
 from Blockchain.Backend.core.block import Block
-from Blockchain.Backend.core.BlockHeader import BlockHeader
+from Blockchain.Backend.core.blockHeader import BlockHeader
 from Blockchain.Backend.core.network.connection import Node
 from Blockchain.Backend.core.database.database import BlockchainDB, NodeDB
 from Blockchain.Backend.core.Tx import Tx

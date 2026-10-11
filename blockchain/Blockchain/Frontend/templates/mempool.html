@@ -1,52 +1,54 @@
-{% extends 'base.html' %} {% block title %} Mempool {% endblock %} 
-{% block content%}
+{% extends 'base.html' %}
+{% block title %}Mempool{% endblock %}
+{% block content %}
 
-<div class="grid-container1">
-{% if not Txs %}
-<h1
-    style="
-      color: whitesmoke;
-      text-align: center;
-      font-size: 2.3em;
-      padding: 1em 1em 0 1em;
-      margin-right: 3em;
-    "
-  >
-    Memory Pool (Unconfirmed Transactions)
-  </h1>
-  <h2
-    style="
-      color: cyan;
-      text-align: center;
-      font-size: 2em;
-      padding: 1em;
-      margin-right: 3em;
-    "
-  >
-    0 Transactions to Mine
+<div class="page-header">
+  <h1>Memory Pool</h1>
+  <p class="page-subtitle">Unconfirmed transactions waiting to be mined</p>
+</div>
+
+{% if Txs %}
+<div class="alert alert-info">
+  <strong>{{ Txs|length }}</strong> transaction{{ 's' if Txs|length != 1 }} pending confirmation.
+  This page refreshes automatically.
+</div>
+
+<div class="table-container">
+  <table class="data-table" aria-label="Mempool transactions">
+    <thead>
+      <tr>
+        <th scope="col">Transaction ID</th>
+        <th scope="col">Amount (BTC)</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for TxId in Txs|reverse %}
+      <tr class="table-row-link" onclick="location.href='{{ url_for('memTxDetails', txid=TxId) }}'">
+        <td>
+          <a id="memtx-{{ loop.index }}" href="{{ url_for('memTxDetails', txid=TxId) }}" class="hash-link mono">
+            {{ TxId }}
+          </a>
+        </td>
+        <td>
+          <span class="amount-badge">{{ Txs[TxId][1] }} BTC</span>
+        </td>
+        <td>
+          <span class="tag tag-pending">⏳ Unconfirmed</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% else %}
-<h1>Memory Pool (Unconfirmed Transactions)</h1>
-  <h2 style="color: whitesmoke; font-size: 2em; padding: 0.3em 0 0.3em 1em">
-    {{ Txs|length }} Transactions
-  </h2>
-
-  
-    <div class="blockheader">
-      <div class="bheader">Transaction ID</div>
-      <div class="bheader">Amount</div>
-    </div>
-  
-
-  {% for TxId in Txs|reverse %}
-  <a href="{{ url_for('memTxDetails', txid=TxId) }}">
-    <div class="block">
-      <div class="block-item TxId">{{ TxId }}</div>
-      <div class="block-item prev_tx">{{ Txs[TxId][1] }} BTC</div>
-    </div>
-  </a>
-
-  {% endfor %}
-{% endif %}
+<div class="empty-state">
+  <div class="empty-icon">✅</div>
+  <h2>Mempool is clear</h2>
+  <p>No unconfirmed transactions. All pending transactions have been mined into blocks.</p>
+  <a href="{{ url_for('wallet') }}" class="btn btn-primary" style="margin-top:1.5rem;">Send a Transaction →</a>
 </div>
+{% endif %}
+
 {% endblock %}

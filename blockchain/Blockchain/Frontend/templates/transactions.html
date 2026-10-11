@@ -1,17 +1,41 @@
-{% extends 'base.html' %} {% block title %} UTXOs {% endblock %} {% block
-content%}
-<div class="grid-container1">
-  <h1>Unspent Transactions (UTXO)</h1>
-  <div class="blockheader">
-    <div class="bheader">Transaction ID</div>
-  </div>
+{% extends 'base.html' %}
+{% block title %}Transactions{% endblock %}
+{% block content %}
 
-  {% for Tx in allTransactions %}
-  <a id="detail" href="{{ url_for('transactions', txid= Tx ) }}">
-    <div class="block">
-      <div class="block-item TxId">{{ Tx }}</div>
-    </div>
-  </a>
-  {% endfor %}
+<div class="page-header">
+  <h1>Unspent Transactions (UTXO Set)</h1>
+  <p class="page-subtitle">{{ allTransactions|length }} unspent outputs available</p>
 </div>
+
+{% if allTransactions %}
+<div class="table-container">
+  <table class="data-table" aria-label="Unspent transaction outputs">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Transaction ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tx in allTransactions %}
+      <tr class="table-row-link" onclick="location.href='{{ url_for('transactions', txid=tx) }}'">
+        <td class="muted">{{ loop.index }}</td>
+        <td>
+          <a id="tx-{{ loop.index }}" href="{{ url_for('transactions', txid=tx) }}" class="hash-link mono">
+            {{ tx }}
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <h2>No unspent transactions</h2>
+  <p>The UTXO set is currently empty or the blockchain is initializing.</p>
+</div>
+{% endif %}
+
 {% endblock %}

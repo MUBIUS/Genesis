@@ -1,84 +1,124 @@
-{% extends 'base.html' %} {% block title %} Codies Alert {% endblock %} {% block
-content%}
-<h1 class="BlockNumber">Transaction</h1>
+{% extends 'base.html' %}
+{% block title %}Transaction {{ Tx['TxId'][:16] }}…{% endblock %}
+{% block content %}
 
-<div class="grid-container3">
-  <div class="TxHeader">
-    <h1>{{Tx['TxId']}}</h1>
+<div class="page-header">
+  <div class="breadcrumb">
     {% if not Unconfirmed %}
-    <div class="TxItem PrevBlockHash">Block Height</div>
+    <a href="{{ url_for('block') }}">Blocks</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="{{ url_for('showBlock', blockHeader=block['BlockHeader']['blockHash']) }}">Block #{{ block['Height'] }}</a>
+    <span class="breadcrumb-sep">›</span>
     {% endif %}
-    <div class="TxItem PrevBlockHash">Status</div>
-    <div class="TxItem TotalTxs">Transaction Fee</div>
-    <div class="TxItem BlockSize">Transaction Size</div>
-    <div class="TxItem MerkleRoot">Version</div>
-    <div class="TxItem Nonce">Locktime</div>
-    <div class="TxItem Timestamp">ETA</div>
+    <span>Transaction</span>
   </div>
-
-  <div class="TxDetails">
-    <h1>_</h1>
-    {% if not Unconfirmed %}
-    <a
-      id="detail"
-      href="{{ url_for('block', blockHeader=block['BlockHeader']['blockHash']) }}"
-    >
-      <div class="TxItemDetail PrevBlockHash">{{ block['Height'] }}</div>
-    </a>
-    {% endif %} {% if Unconfirmed %}
-    <div class="TxItemDetail PrevBlockHash">Unconfirmed</div>
+  <h1>Transaction</h1>
+  <div class="status-row">
+    {% if Unconfirmed %}
+    <span class="tag tag-pending">⏳ Unconfirmed</span>
     {% else %}
-    <div class="TxItemDetail PrevBlockHash">Confirmed</div>
+    <span class="tag tag-confirmed">✓ Confirmed</span>
     {% endif %}
-    <div class="TxItemDetail TotalTxs">1</div>
-    <div class="TxItemDetail BlockSize">120</div>
-    <div class="TxItemDetail MerkleRoot">{{Tx['version']}}</div>
-    <div class="TxItemDetail Nonce">{{Tx['locktime']}}</div>
-    <div class="TxItemDetail Timestamp">40 Seconds</div>
   </div>
 </div>
 
-<h1 class="TransactionsHeader">Transactions</h1>
+<div class="detail-card">
+  <h2 class="detail-card-title">Transaction Details</h2>
+  <div class="detail-grid">
 
-<div class="TranscationsDiv">
-  <div class="TxStyle">
-    <h3>Inputs</h3>
-    <h4 class="TxStyle TxId">
-      <a href="{{ url_for('transactions', txid=Tx['TxId']) }}">
-        {{ Tx['TxId'] }}
-      </a>
-    </h4>
-    {% for tx_in in Tx['tx_ins'] %} {% if
-    tx_in['prev_tx']=='0000000000000000000000000000000000000000000000000000000000000000'
-    %}
-    <div class="TxStyle TxInput">#0 Coinbase</div>
-    {% else %}
-    <div class="TxStyle TxInput">
-      <a href="{{ url_for('transactions', txid=tx_in['prev_tx']) }}"
-        >{{ tx_in['prev_tx'] }}
-      </a>
+    <div class="detail-row">
+      <span class="detail-label">TX ID</span>
+      <span class="detail-value mono break-all accent-text">{{ Tx['TxId'] }}</span>
     </div>
-    {% endif %} {% endfor %}
-  </div>
 
-  <div class="TxStyle output">
-    <h3>Outputs</h3>
-    {% for tx_out in Tx['tx_outs'] %}
-    <div class="Txoutput">
-      {% set h160hash = bytes.fromhex(tx_out['script_pubkey']['cmds'][2]) %} {%
-      set newAddr = main_prefix + h160hash %} {% set checksum =
-      sha256(sha256(newAddr).digest()).digest()[:4] %} {% set newAddr =newAddr +
-      checksum %} {% set pubAddress = encode_base58(newAddr) %} {% if
-      (tx_out['amount']%100000000) == 0 %} {% set amount =
-      (tx_out['amount']/100000000)|round()|int %} {% else %} {% set amount =
-      tx_out['amount']/100000000 %} {% endif %}
-
-      <a href="{{ url_for('address', publicAddress = pubAddress) }}">
-        #{{ loop.index0 }} {{ pubAddress }} :{{ amount }} BTC
-      </a>
+    {% if not Unconfirmed %}
+    <div class="detail-row">
+      <span class="detail-label">Block</span>
+      <span class="detail-value">
+        <a href="{{ url_for('showBlock', blockHeader=block['BlockHeader']['blockHash']) }}" class="hash-link">
+          Block #{{ block['Height'] }}
+        </a>
+      </span>
     </div>
-    {% endfor %}
+    {% endif %}
+
+    <div class="detail-row">
+      <span class="detail-label">Status</span>
+      <span class="detail-value">
+        {% if Unconfirmed %}
+        <span class="tag tag-pending">Unconfirmed — in Mempool</span>
+        {% else %}
+        <span class="tag tag-confirmed">Confirmed</span>
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Version</span>
+      <span class="detail-value mono">{{ Tx.get('version', 1) }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label">Locktime</span>
+      <span class="detail-value mono">{{ Tx.get('locktime', 0) }}</span>
+    </div>
+
+    {% if not Unconfirmed %}
+    <div class="detail-row">
+      <span class="detail-label">Timestamp</span>
+      <span class="detail-value">{{ format_timestamp(block['BlockHeader']['timestamp']) }}</span>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 
-{%endblock%}
+<!-- I/O Card -->
+<div class="section">
+  <div class="tx-card">
+    <div class="tx-io-grid">
+      <!-- Inputs -->
+      <div class="tx-io-col">
+        <h3 class="io-label">Inputs</h3>
+        {% for tx_in in Tx['tx_ins'] %}
+        <div class="io-item io-input">
+          {% if tx_in['prev_tx'] == '0000000000000000000000000000000000000000000000000000000000000000' %}
+          <span class="coinbase-label">🏆 Coinbase — New BTC created</span>
+          {% else %}
+          <a href="{{ url_for('transactions', txid=tx_in['prev_tx']) }}" class="mono break-all">
+            {{ tx_in['prev_tx'] }}
+          </a>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="tx-arrow" aria-hidden="true">→</div>
+
+      <!-- Outputs -->
+      <div class="tx-io-col">
+        <h3 class="io-label">Outputs</h3>
+        {% for tx_out in Tx['tx_outs'] %}
+        {% set h160hash = bytes.fromhex(tx_out['script_pubkey']['cmds'][2]) %}
+        {% set newAddr = main_prefix + h160hash %}
+        {% set checksum = sha256(sha256(newAddr).digest()).digest()[:4] %}
+        {% set newAddr = newAddr + checksum %}
+        {% set pubAddress = encode_base58(newAddr) %}
+        {% if (tx_out['amount'] % 100000000) == 0 %}
+          {% set amount = (tx_out['amount'] / 100000000)|round()|int %}
+        {% else %}
+          {% set amount = tx_out['amount'] / 100000000 %}
+        {% endif %}
+        <div class="io-item io-output">
+          <a href="{{ url_for('address', publicAddress=pubAddress) }}" class="address-link">
+            {{ pubAddress }}
+          </a>
+          <span class="amount-badge">{{ amount }} BTC</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

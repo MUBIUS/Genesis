@@ -1,17 +1,101 @@
-{% extends 'base.html' %} {% block title %} Home {% endblock %} {% block content
-%}
-<div class="wallet-container">
-  <h1>Send Bitcoin</h1>
+{% extends 'base.html' %}
+{% block title %}Send Bitcoin{% endblock %}
+{% block content %}
 
-  <form action="#" id="form" method="post">
-    <label for="from">From Address:</label><br />
-    <input type="text" id="from" name="fromAddress" /><br />
-    <label for="to">To Address:</label><br />
-    <input type="text" id="to" name="toAddress" /><br /><br />
-    <label for="amount">Amount:</label><br />
-    <input type="number" id="amount" name="Amount" /><br /><br />
-    <span> {{ message }} </span> <br />
-    <input type="submit" value="Send" />
-  </form>
+<div class="page-header">
+  <h1>Send Bitcoin</h1>
+  <p class="page-subtitle">Broadcast a signed P2PKH transaction to the network</p>
 </div>
-{% endblock%}
+
+<div class="wallet-layout">
+  <div class="wallet-form-col">
+    <div class="detail-card">
+      <h2 class="detail-card-title">New Transaction</h2>
+
+      {% if message %}
+      <div class="alert {% if message_type == 'success' %}alert-success{% else %}alert-error{% endif %}" role="alert">
+        {{ message }}
+      </div>
+      {% endif %}
+
+      <form id="send-form" action="{{ url_for('wallet') }}" method="post" novalidate>
+        <div class="form-group">
+          <label for="fromAddress" class="form-label">From Address</label>
+          <input
+            id="fromAddress"
+            type="text"
+            name="fromAddress"
+            class="form-input mono"
+            placeholder="1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf…"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <span class="form-hint">Your Bitcoin address (must have UTXOs)</span>
+        </div>
+
+        <div class="form-group">
+          <label for="toAddress" class="form-label">To Address</label>
+          <input
+            id="toAddress"
+            type="text"
+            name="toAddress"
+            class="form-input mono"
+            placeholder="1BoatSLRHtKNngkdXEeobR76b53LETtpyT…"
+            required
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <span class="form-hint">Recipient's Bitcoin address</span>
+        </div>
+
+        <div class="form-group">
+          <label for="amount-input" class="form-label">Amount (satoshis)</label>
+          <input
+            id="amount-input"
+            type="number"
+            name="Amount"
+            class="form-input"
+            placeholder="100000000 = 1 BTC"
+            min="1"
+            required
+          />
+          <span class="form-hint">1 BTC = 100,000,000 satoshis</span>
+        </div>
+
+        <button id="send-btn" type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">
+          Broadcast Transaction →
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="wallet-info-col">
+    <div class="detail-card">
+      <h2 class="detail-card-title">How It Works</h2>
+      <ol class="info-list">
+        <li>Enter the <strong>From Address</strong> — the address with spendable UTXOs.</li>
+        <li>Enter the <strong>To Address</strong> — recipient's Bitcoin address.</li>
+        <li>Enter the <strong>amount in satoshis</strong>.</li>
+        <li>The backend signs the transaction with ECDSA using the private key associated with your address.</li>
+        <li>The signed transaction is <strong>verified</strong> against the P2PKH script.</li>
+        <li>If valid, it is broadcast to the <strong>mempool</strong> and relayed to peers.</li>
+        <li>Miners pick it up and include it in the next block.</li>
+      </ol>
+    </div>
+
+    <div class="detail-card" style="margin-top:1.5rem;">
+      <h2 class="detail-card-title">Denomination Reference</h2>
+      <table class="data-table" style="font-size:0.85rem;">
+        <tbody>
+          <tr><td>1 BTC</td><td class="mono">100,000,000 sat</td></tr>
+          <tr><td>0.5 BTC</td><td class="mono">50,000,000 sat</td></tr>
+          <tr><td>0.01 BTC</td><td class="mono">1,000,000 sat</td></tr>
+          <tr><td>1,000 sat</td><td class="mono">0.00001 BTC</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

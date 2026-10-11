@@ -17,8 +17,15 @@ from random import randint
 import hmac
 import hashlib
 
-# Had to install Cryto Hash because RIPEMD160 is not available in hashlib
-from Crypto.Hash import RIPEMD160
+try:
+    from Crypto.Hash import RIPEMD160
+except ImportError:
+    try:
+        from Cryptodome.Hash import RIPEMD160
+    except ImportError:
+        import hashlib
+        # In case neither is installed, fallback if hashlib has ripemd160
+        RIPEMD160 = None
 from io import BytesIO
 
 

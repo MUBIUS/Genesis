@@ -3,35 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    {% if refreshtime is defined and refreshtime %}
     <meta http-equiv="refresh" content="{{ refreshtime }}" />
+    {% endif %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Genesis — A Bitcoin-compatible blockchain implemented from scratch in Python, featuring proof-of-work mining, ECDSA transactions, and a real-time block explorer." />
     <link rel="icon" href="/static/images/fav.PNG" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/style.css" />
-    <title>{% block title %} {% endblock %}</title>
+    <title>{% block title %}Genesis{% endblock %} — Bitcoin Blockchain</title>
   </head>
   <body>
-    <section id="cover">
-      
-      <ul>
-        <li><a href="/">Home</a></li>
-        <li><a href="{{url_for('block')}}">Blocks</a></li>
-        <li><a href="{{url_for('transactions')}}">Transactions</a></li>
-        <li><a href="{{url_for('mempool')}}">Mempool</a></li>
-        <li><a href="{{url_for('wallet')}}">Wallet</a></li>
+    <!-- Top Navigation -->
+    <nav id="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-brand">
+        <a href="/" class="brand-link" aria-label="Genesis Home">
+          <span class="brand-icon">⬡</span>
+          <span class="brand-name">Genesis</span>
+        </a>
+      </div>
+
+      <ul class="nav-links" role="list">
+        <li><a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+        <li><a href="{{ url_for('block') }}" class="nav-link {% if request.endpoint in ['block','showBlock'] %}active{% endif %}">Blocks</a></li>
+        <li><a href="{{ url_for('transactions') }}" class="nav-link {% if request.endpoint in ['transactions','txDetail'] %}active{% endif %}">Transactions</a></li>
+        <li><a href="{{ url_for('mempool') }}" class="nav-link {% if request.endpoint == 'mempool' %}active{% endif %}">Mempool</a></li>
+        <li><a href="{{ url_for('wallet') }}" class="nav-link {% if request.endpoint == 'wallet' %}active{% endif %}">Wallet</a></li>
       </ul>
 
-      <div class="search-container">
-        <form action="/search">
+      <div class="nav-search">
+        <form action="/search" role="search" aria-label="Search blockchain">
           <input
+            id="global-search"
             type="text"
-            placeholder="Search for Block header, Transaction Id or address"
+            placeholder="Block hash / Tx ID / Address…"
             name="search"
             required
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search"
           />
-          <button type="submit"><img src="/static/images/search.png" /></button>
+          <button type="submit" aria-label="Submit search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
         </form>
       </div>
-      {% block content%} {% endblock %}
-    </section>
+    </nav>
+
+    <!-- Page Content -->
+    <main id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer">
+      <div class="footer-inner">
+        <p>
+          <span class="footer-brand">⬡ Genesis</span> — Bitcoin blockchain built from scratch in Python.
+          <a href="https://github.com/MUBIUS/Genesis" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+        </p>
+        <p class="footer-tech">Python · Flask · secp256k1 ECDSA · SHA-256 PoW · P2PKH</p>
+      </div>
+    </footer>
   </body>
 </html>

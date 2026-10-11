@@ -1,9 +1,11 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
+import os
+
+# Add the project root directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 import hashlib
-from Crypto.Hash import RIPEMD160
-from hashlib import sha256
+from hashlib import sha256, new as hashlib_new
 from math import log
 
 from Blockchain.Backend.core.EllepticCurve.EllepticCurve import BASE58_ALPHABET
@@ -15,7 +17,8 @@ def hash256(s):
 
 
 def hash160(s):
-    return RIPEMD160.new(sha256(s).digest()).digest()
+    """ripemd160(sha256(s))"""
+    return hashlib_new('ripemd160', sha256(s).digest()).digest()
 
 
 def bytes_needed(n):

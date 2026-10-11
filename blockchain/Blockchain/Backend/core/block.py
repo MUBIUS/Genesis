@@ -1,6 +1,8 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
-from Blockchain.Backend.core.BlockHeader import BlockHeader
+import os
+# Add the project root directory to the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from Blockchain.Backend.core.blockHeader import BlockHeader
 from Blockchain.Backend.core.Tx import Tx
 from Blockchain.Backend.util.util import (little_endian_to_int, int_to_little_endian, encode_varint, read_varint)
 class Block:

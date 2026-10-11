@@ -1,10 +1,10 @@
 import sys
-sys.path.append('/Users/my/Desktop/blockchain')
-
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+from Blockchain.Backend.core.blockHeader import BlockHeader
 import copy
 import configparser
 from Blockchain.Backend.core.block import Block
-from Blockchain.Backend.core.BlockHeader import BlockHeader
 from Blockchain.Backend.util.util import hash256, merkle_root, target_to_bits, bits_to_target
 from Blockchain.Backend.core.database.database import BlockchainDB, NodeDB
 from Blockchain.Backend.core.Tx import CoinbaseTx, Tx
@@ -370,11 +370,17 @@ if __name__ == "__main__":
     
     """ read configuration file """
     config = configparser.ConfigParser()
-    config.read('config.ini')
-    localHost = config['DEFAULT']['host']
-    localHostPort = int(config['MINER']['port'])
-    simulateBTC = bool(config['MINER']['simulateBTC'])
-    webport = int(config['Webhost']['port'])
+    config_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    config_path = os.path.join(config_dir, 'config.ini')
+    if not os.path.exists(config_path):
+        config_path = os.path.abspath('config.ini')
+    if os.path.exists(config_path):
+        config.read(config_path)
+
+    localHost = config.get('DEFAULT', 'host', fallback='127.0.0.1')
+    localHostPort = int(config.get('MINER', 'port', fallback=8888))
+    simulateBTC = config.getboolean('MINER', 'simulateBTC', fallback=True)
+    webport = int(config.get('Webhost', 'port', fallback=5900))
 
     with Manager() as manager:
         utxos = manager.dict()

@@ -4,8 +4,17 @@ import json
 
 class BaseDB:
     def __init__(self):
-        self.basepath = "data"
-        self.filepath = "/".join((self.basepath, self.filename))
+        # Locate data directory relative to repository/project structure
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+        data_dir = os.path.join(project_root, "data")
+        if not os.path.exists(data_dir):
+            cwd_data = os.path.abspath("data")
+            if os.path.exists(cwd_data):
+                data_dir = cwd_data
+            else:
+                os.makedirs(data_dir, exist_ok=True)
+        self.basepath = data_dir
+        self.filepath = os.path.join(self.basepath, self.filename)
 
     def read(self):
         if not os.path.exists(self.filepath):

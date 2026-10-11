@@ -1,0 +1,6 @@
+Flask>=2.2.0
+Flask-QRcode>=3.0.0
+qrcode>=7.3.0
+Pillow>=9.0.0
+pycryptodome>=3.11.0
+requests>=2.26.0
